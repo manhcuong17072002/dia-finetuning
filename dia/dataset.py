@@ -25,8 +25,8 @@ class LocalDiaDataset(Dataset):
 
     def __getitem__(self, idx: int):
         row = self.df.iloc[idx]
-        lang = sample.get("language", None)
-        text = f"[{lang}]" + sample["text"] if lang else sample["text"]
+        lang = row.get("language", None)
+        text = f"[{lang}]" + row["text"] if lang else row["text"]
         audio_path = self.audio_root / row["audio"]
         waveform, sr = torchaudio.load(audio_path)
         if sr != 44100:
