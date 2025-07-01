@@ -61,6 +61,25 @@ python -m dia.finetune \
 
 ---
 
+## Using accelerate
+
+Accelerate from HF is awesome it is like using all GPU without much settings.
+First install the project and use *accelerate config*
+
+Select multi-gpy , fp16, all gpu .. 
+
+```
+accelerate launch -m dia.finetune
+--hub_model nari-labs/Dia-1.6B
+--run_name emam
+--output_dir /home/ec2-user/SageMaker/dia/new/output
+--csv_path /home/ec2-user/SageMaker/dia/new/metadata_en.csv
+--audio_root /home/ec2-user/SageMaker/dia/new/wavs
+```
+
+Also you can set all args will remian same if, In above command i have not used datasets. 
+
+
 ## Monitoring & Evaluation
 
 * **TensorBoard**:
