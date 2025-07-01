@@ -71,14 +71,14 @@ Select multi-gpy , fp16, all gpu ..
 ```
 accelerate launch -m dia.finetune
 --hub_model nari-labs/Dia-1.6B
---run_name emam
---output_dir /home/ec2-user/SageMaker/dia/new/output
---csv_path /home/ec2-user/SageMaker/dia/new/metadata_en.csv
---audio_root /home/ec2-user/SageMaker/dia/new/wavs
+--run_name your_name
+--output_dir ..output_dir
+--csv_path ..some//metadata_en.csv
+--audio_root ..audio_files_path/wavs
 ```
 
-Also you can set all args will remian same if, In above command i have not used datasets. 
-
+Also you can set all args will remian same if, In above command i have not used datasets. \
+Rememebr use all default args and dont use --half, also i notice on some systems if we pass config in arg we get error. so avoid as its already in fie.
 
 ## Monitoring & Evaluation
 
