@@ -43,30 +43,19 @@ torch.backends.cudnn.benchmark = True
 
 #bytes for language tag replacement
 LANG2BYTE = {
-    "en": 3,
-    "de": 4,
-    "fr": 5,
-    "es": 6,
-    "it": 7,
-    "nl": 14,
-    "pl": 15,
-    "pt": 16,
-    "tr": 17,
-    "hu": 18,
-    
+    "Hương Lý": 0,
+    "Phương Anh": 1,
+    "Trần Quyên": 2,
+    "Châu Anh": 3,
+    "Danh Sơn": 4,
 }
 
 test_sentences = {
-    "en": "In order to fully assess performance and the accuracy of language tags, this test sentence contains multiple subordinate clauses, varied punctuation, and a sufficient word count.",
-    "de": "Um Leistung und die Korrektheit der Sprach-Tags umfassend zu prüfen, enthält dieser Testsatz mehrere Nebensätze, unterschiedliche Zeichensetzung und eine ausreichende Wortzahl.",
-    #"fr": "Pour évaluer pleinement les performances et la précision des balises de langue, cette phrase de test comporte plusieurs propositions subordonnées, une ponctuation variée et un nombre de mots suffisant.",
-    #"es": "Para evaluar completamente el rendimiento y la precisión de las etiquetas de idioma, esta frase de prueba incluye varias oraciones subordinadas, puntuación diversa y la cantidad de palabras necesaria.",
-    #"it": "Per valutare appieno le prestazioni e la precisione dei tag di lingua, questa frase di prova contiene più proposizioni subordinate, punteggiatura varia e un numero adeguato di parole.",
-    #"nl": "Om de prestaties en de nauwkeurigheid van de taaltags volledig te beoordelen, bevat deze testzin meerdere ondergeschikte zinnen, gevarieerde interpunctie en een voldoende woordenaantal.",
-    #"pl": "Aby w pełni ocenić wydajność i poprawność tagów językowych, to zdanie testowe zawiera kilka zdań podrzędnych, zróżnicowaną interpunkcję i wystarczającą liczbę słów.",
-    #"pt": "Para avaliar completamente o desempenho e a precisão das marcas de idioma, esta frase de teste contém várias orações subordinadas, pontuação diversa e um número adequado de palavras.",
-    #"tr": "Akışı elemeden performansı ve dil etiketlerinin doğruluğunu tam olarak değerlendirmek için bu test cümlesi birden fazla yan cümle, çeşitli noktalama işaretleri ve yeterli kelime sayısı içerir.",
-    #"hu": "A teljesítmény és a nyelvcímkék pontosságának átfogó értékeléséhez ez a tesztmondat több mellékmondatot, változatos írásjeleket és elegendő szószámot tartalmazza."
+    "Hương Lý": "Xin chào, tôi là Hương Lý. Tôi rất vui được nói chuyện với các bạn hôm nay.",
+    "Phương Anh": "Tôi tên là Phương Anh. Tôi hy vọng bạn sẽ thích bản demo này.",
+    "Trần Quyên": "Tôi là Trần Quyên. Chúc bạn một ngày tốt lành!",
+    "Châu Anh": "Tôi là Châu Anh. Cảm ơn bạn đã sử dụng mô hình Dia.",
+    "Danh Sơn": "Tôi là Danh Sơn. Hẹn gặp lại các bạn trong những bản demo tiếp theo.",
 }
 
 @dataclass
@@ -84,7 +73,7 @@ class TrainConfig:
     seed: int = 42                # seed for reproducibility
     runs_dir: Path = Path("runs")
     run_name: str = "dia_finetune_cv"
-    output_dir: Path = Path(".cpkts/dia_finetune_cv ")
+    output_dir: Path = Path(".cpkts/dia_finetune_cv")
 
 
 def get_args() -> argparse.Namespace:
