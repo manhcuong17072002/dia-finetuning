@@ -61,8 +61,8 @@ test_sentences = {
 @dataclass
 class TrainConfig:
     epochs: int = 1
-    batch_size: int = 2
-    grad_accum_steps: int = 2
+    batch_size: int = 1
+    grad_accum_steps: int = 4
     learning_rate: float = 1e-5
     warmup_steps: int = 500
     unconditional_frac: float = 0.15
