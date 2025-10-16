@@ -464,6 +464,17 @@ def train(model, dia_cfg: DiaConfig, dac_model: dac.DAC, dataset, train_cfg: Tra
 
 
 
+from safetensors.torch import load_file
+
+def load_checkpoint(model, ckpt_file: str):
+    
+    if ckpt_file.endswith(".safetensors"):
+        state_dict = load_file(ckpt_file, device="cpu")
+    else:
+        state_dict = torch.load(ckpt_file, map_location="cpu")
+
+    model.load_state_dict(state_dict)
+    return model
 
 
 
@@ -521,14 +532,14 @@ def main():
     if args.local_ckpt:
         ckpt_file = args.local_ckpt
     else:
-        ckpt_file = hf_hub_download(args.hub_model, filename="dia-v0_1.pth")
+        ckpt_file = hf_hub_download(args.hub_model, filename="model.safetensors")
     model = DiaModel(dia_cfg)
     if args.half:
         model=model.half()
     if args.compile:
         model = torch.compile(model, backend="inductor")
-    model.load_state_dict(torch.load(ckpt_file, map_location="cpu"))
     
+    model = load_checkpoint(model, ckpt_file)
 
     # start training
     train(model, dia_cfg, dac_model, dataset, train_cfg)
