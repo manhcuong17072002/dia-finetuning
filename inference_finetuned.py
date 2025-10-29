@@ -147,6 +147,11 @@ def main():
         default="cuda" if torch.cuda.is_available() else "cpu",
         help="Device to run inference on (e.g., 'cuda', 'cpu', default: auto).",
     )
+    infra_group.add_argument(
+        "--compile",
+        action="store_true",
+        help="Use torch.compile for faster inference (experimental).",
+    )
 
     args = parser.parse_args()
 
@@ -197,6 +202,8 @@ def main():
             cfg_scale=args.cfg_scale,
             temperature=args.temperature,
             top_p=args.top_p,
+            use_torch_compile=args.compile,
+            cfg_filter_top_k=args.cfg_filter_top_k,
         )
         print("Audio generation complete.")
 
