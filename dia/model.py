@@ -74,7 +74,7 @@ class Dia:
         self.dac_model = None
 
     @classmethod
-    def from_local(cls, config_path: str, checkpoint_path: str, device: torch.device | None = None) -> "Dia":
+    def from_local(cls, config_path: str, checkpoint_path: str, device: torch.device | None = None, dac_model_path=None) -> "Dia":
         """Loads the Dia model from local configuration and checkpoint files.
 
         Args:
@@ -105,7 +105,7 @@ class Dia:
 
         dia.model.to(dia.device)
         dia.model.eval()
-        dia._load_dac_model()
+        dia._load_dac_model(dac_model_path=dac_model_path)
         return dia
 
     @classmethod
@@ -132,9 +132,10 @@ class Dia:
         checkpoint_path = hf_hub_download(repo_id=model_name, filename="dia-v0_1.pth")
         return cls.from_local(config_path, checkpoint_path, device)
 
-    def _load_dac_model(self):
+    def _load_dac_model(self, dac_model_path=None):
         try:
-            dac_model_path = dac.utils.download()
+            if dac_model_path is None:
+                dac_model_path = dac.utils.download()
             dac_model = dac.DAC.load(dac_model_path).to(self.device)
         except Exception as e:
             raise RuntimeError("Failed to load DAC model") from e
@@ -187,21 +188,16 @@ class Dia:
         
         replaced_bytes = byte_text
 
-        LANG2BYTE = {
-            "en": 3,
-            "de": 4,
-            "fr": 5,
-            "es": 6,
-            "it": 7,
-            "nl": 14,
-            "pl": 15,
-            "pt": 16,
-            "tr": 17,
-            "hu": 18,
+        SPEAKER2BYTE = {
+            "Hương Lý": 0,
+            "Phương Anh": 1,
+            "Trần Quyên": 2,
+            "Châu Anh": 3,
+            "Danh Sơn": 4,
         }
 
-        for lang, byte_val in LANG2BYTE.items():
-            tag = f"[{lang}]".encode("ascii")        # e.g. b"[de]"
+        for speaker, byte_val in SPEAKER2BYTE.items():
+            tag = f"[{speaker}]".encode("utf-8")        # e.g. b"[de]"
             code = bytes([byte_val])                 # e.g. b"\x04"
             replaced_bytes = replaced_bytes.replace(tag, code)
         text_tokens = list(replaced_bytes)
@@ -285,6 +281,8 @@ class Dia:
             max_tokens, encoder_out, src_positions_BxS
         )
 
+        batch_size, _, _ = encoder_out.shape
+        
         decoder_self_attention_cache: list[KVCache] = []
         for _ in range(self.model.decoder.num_layers):
             decoder_self_attention_cache.append(
@@ -293,6 +291,7 @@ class Dia:
                     max_tokens,
                     self.config.model.decoder.gqa_head_dim,
                     self.device,
+                    batch_size=batch_size,
                 )
             )
 
@@ -413,6 +412,7 @@ class Dia:
 
             logits_CxV = cfg_logits_CxV.reshape((-1, V))  # C, V
             logits_CxV[:, 1025:] = -torch.inf
+            logits_CxV[1:, 1024:] = -torch.inf
 
             # Sample next token
             pred_C = _sample_next_token(
