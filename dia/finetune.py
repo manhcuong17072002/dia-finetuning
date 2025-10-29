@@ -42,7 +42,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch.backends.cudnn.benchmark = True
 
 #bytes for language tag replacement
-LANG2BYTE = {
+SPEAKER2BYTE = {
     "Hương Lý": 0,
     "Phương Anh": 1,
     "Trần Quyên": 2,
@@ -61,7 +61,7 @@ test_sentences = {
 @dataclass
 class TrainConfig:
     epochs: int = 1
-    batch_size: int = 1
+    batch_size: int = 2
     grad_accum_steps: int = 4
     learning_rate: float = 1e-5
     warmup_steps: int = 500
@@ -99,6 +99,7 @@ def get_args() -> argparse.Namespace:
                         help="Random seed for reproducibility.")
     parser.add_argument("--half", action="store_true", help="load model in fp16")
     parser.add_argument("--compile", action="store_true", help="torch compile model")
+    parser.add_argument("--dac_model", type=str, help="Path to DAC model checkpoint", required=True)
     return parser.parse_args()
 
 
@@ -116,7 +117,7 @@ def collate_fn(batch, config: DiaConfig, device: torch.device):
     for txt in texts:
         b_full = txt.encode('utf-8')
         # replace leading "[lang]" prefix
-        for code, val in LANG2BYTE.items():
+        for code, val in SPEAKER2BYTE.items():
             prefix = f"[{code}]".encode('utf-8')
             if b_full.startswith(prefix):
                 b_full = bytes([val]) + b_full[len(prefix):]
@@ -483,8 +484,10 @@ def load_checkpoint(model, ckpt_file: str):
 def main():
     args = get_args()
     dia_cfg = DiaConfig.load(args.config)
-    dac_model = dac.DAC.load(dac.utils.download()).to(device)
-
+    if args.dac_model:
+        dac_model = dac.DAC.load(args.dac_model).to(device)
+    else:
+        dac_model = dac.DAC.load(dac.utils.download()).to(device)
 
     dataset=None
 
@@ -500,7 +503,7 @@ def main():
             dataset = LocalDiaDataset(args.csv_path, args.audio_root, dia_cfg, dac_model)
         else:
             # load one or two streaming HF datasets
-            ds1 = load_dataset(args.dataset, split="train", streaming=args.streaming)
+            ds1 = load_dataset("parquet", data_dir=args.dataset, split="train", streaming=args.streaming)
             
             if args.streaming:
                 if args.dataset2:
