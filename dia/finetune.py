@@ -10,7 +10,7 @@ import torch
 import torchaudio
 import pandas as pd
 from torch.utils.data import Dataset, DataLoader, random_split
-from torch.cuda.amp import autocast
+from torch.amp import autocast
 from torch.utils.tensorboard import SummaryWriter
 from torch.nn.utils import clip_grad_norm_
 from transformers import get_scheduler
@@ -60,13 +60,13 @@ test_sentences = {
 
 @dataclass
 class TrainConfig:
-    epochs: int = 1
-    batch_size: int = 2
-    grad_accum_steps: int = 4
-    learning_rate: float = 1e-5
-    warmup_steps: int = 500
+    epochs: int = 3
+    batch_size: int = 4
+    grad_accum_steps: int = 8
+    learning_rate: float = 2e-5
+    warmup_steps: int = 2000
     unconditional_frac: float = 0.15
-    eval_step: int = 200
+    eval_step: int = 2000
     save_step: int = 2000
     split_ratio: float = 0.997
     shuffle_buffer_size: int = None  # for streaming shuffle
@@ -251,7 +251,7 @@ def train_step(model, batch, dia_cfg, train_cfg, opt, sched, writer, step, globa
         batch['enc_self_attn_mask'] = torch.zeros_like(batch['enc_self_attn_mask'])
         batch['dec_cross_attn_mask'] = torch.zeros_like(batch['dec_cross_attn_mask'])
 
-    with autocast():
+    with autocast(device_type="cuda"):
         # forward pass
         logits = model(
             src_BxS=batch['src_tokens'],
@@ -337,7 +337,7 @@ def eval_step(model, val_loader, dia_cfg, dac_model, writer, global_step):
             last_batch = eb
 
             # 1) do your forward in mixed precision
-            with autocast():
+            with autocast(device_type="cuda"):
                 logits16 = model(
                     src_BxS=eb['src_tokens'],
                     tgt_BxTxC=eb['tgt_tokens'],
