@@ -3,10 +3,22 @@ import numpy as np
 import torch
 import torchaudio
 from huggingface_hub import hf_hub_download
+from safetensors.torch import load_file
 
 from .audio import audio_to_codebook, codebook_to_audio
 from .config import DiaConfig
 from .layers import DiaModel, KVCache
+
+
+def load_checkpoint(model, ckpt_file: str, device="cpu"):
+    
+    if ckpt_file.endswith(".safetensors"):
+        state_dict = load_file(ckpt_file, device=device)
+    else:
+        state_dict = torch.load(ckpt_file, map_location=device)
+
+    model.load_state_dict(state_dict)
+    return model
 
 
 def get_default_device():
@@ -96,8 +108,7 @@ class Dia:
         dia = cls(config, device)
 
         try:
-            state_dict = torch.load(checkpoint_path, map_location=dia.device)
-            dia.model.load_state_dict(state_dict)
+            load_checkpoint(dia.model, checkpoint_path, device=dia.device)
         except FileNotFoundError:
             raise FileNotFoundError(f"Checkpoint file not found at {checkpoint_path}")
         except Exception as e:
