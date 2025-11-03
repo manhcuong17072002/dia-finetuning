@@ -54,15 +54,15 @@ class HFDiaDataset(Dataset):
 
     def __getitem__(self, idx: int):
         sample = self.dataset[idx]
-        lang = sample.get("language", None)
-        text = f"[{lang}]" + sample["text"] if lang else sample["text"]
+        speaker = sample.get("speaker", None)
+        text = f"[{speaker}]" + sample["text"] if speaker else sample["text"]
         audio_info = sample["audio"]
         waveform = torch.tensor(audio_info["array"], dtype=torch.float32)
         if waveform.ndim == 1:
             waveform = waveform.unsqueeze(0).unsqueeze(0)
         elif waveform.ndim == 2:
             waveform = waveform.unsqueeze(0)
-        sr = audio_info.get("sampling_rate", 44100)
+        sr = sample.get("sample_rate", 44100)
         if sr != 44100:
             waveform = torchaudio.functional.resample(waveform, sr, 44100)
         with torch.no_grad():
